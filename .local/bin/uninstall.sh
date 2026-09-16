@@ -84,6 +84,10 @@ BIN_LIST=(
     "update.sh"
     "zoxide"
     "uninstall.sh"
+    "bat"
+    "delta"
+    "tldr"
+    "tealdeer"
 )
 
 for bin in "${BIN_LIST[@]}"; do
@@ -104,9 +108,11 @@ rm -rf "$HOME/.local/share/fonts/JetBrainsMono"
 rm -rf "$HOME/.local/share/gef"
 rm -rf "$HOME/.local/share/terminfo"
 rm -rf "$HOME/.terminfo"
+rm -rf "$HOME/.cache/tealdeer"
 rm -rf "$HOME/.config/dotfiles"
 rm -rf "$HOME/.config/nvim"
 rm -rf "$HOME/.config/wezterm"
+rm -rf "$HOME/.config/lazygit"
 rm -f "$HOME/.config/starship.toml"
 
 echo "[6/7] Removing manual pages and rebuilding system caches..."
@@ -121,6 +127,9 @@ MAN1_FILES=(
     "zoxide-init.1"
     "zoxide-query.1"
     "zoxide-remove.1"
+    "bat.1"
+    "delta.1"
+    "tldr.1"
 )
 for man in "${MAN1_FILES[@]}"; do
     rm -f "$HOME/.local/share/man/man1/$man"

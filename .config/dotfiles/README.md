@@ -327,6 +327,47 @@ gdb <executable>
 
 ---
 
+### 1.9 Syntax-Highlighted File Viewing (bat)
+
+Use `bat` for syntax-highlighted file viewing and `fzf` previews.
+
+#### Commands
+| Command | Action |
+| :--- | :--- |
+| `bat <file>` | Display file contents with syntax highlighting and line numbers |
+| `bat -p <file>` | Display raw file contents without line numbers or headers |
+| `cat <file>` | Aliased to `bat --paging=never` |
+
+---
+
+### 1.10 Syntax-Highlighted Diff Viewer (delta)
+
+Delta provides language syntax highlighting and line-level diff formatting for Git.
+
+#### Usage
+Delta activates automatically for standard Git commands and lazygit diff panels:
+```bash
+git diff
+git show
+git log -p
+```
+
+---
+
+### 1.11 Offline Command Cheatsheets (tealdeer / tldr)
+
+Tealdeer provides offline syntax examples for terminal utilities.
+The pages database is pre-cached for offline operation.
+
+#### Commands
+| Command | Action |
+| :--- | :--- |
+| `tldr <command>` | Display practical usage examples for `<command>` |
+| `tldr --list` | List all cached command manual pages |
+| `tldr --update` | Refresh local cheatsheet cache from remote repository |
+
+---
+
 ## 2. Offline System Deployment
 
 ### 2.1 Target System Configuration (Linux)
@@ -491,12 +532,16 @@ Follow this test procedure to verify offline installation on an isolated target 
 ```text
 ~
 ├── .dotfiles/                  <- Bare Git repository (tracks files in $HOME)
+├── .cache/
+│   └── tealdeer/               <- Pre-seeded offline command cheatsheet cache
 ├── .config/
 │   ├── dotfiles/               <- Technical documentation and cheat sheet
+│   ├── lazygit/                <- Lazygit configuration (delta pager integration)
 │   ├── nvim/                   <- Neovim and LazyVim configuration
 │   ├── wezterm/                <- WezTerm terminal configuration
 │   └── starship.toml           <- Prompt settings
 ├── .gdbinit                    <- GDB initialization script and GEF loader
+├── .gitconfig                  <- Tracked Git configuration with delta pager
 ├── .local/
 │   ├── bin/                    <- Standalone executables and operational scripts
 │   ├── opt/                    <- Extracted application trees (Neovim runtime)
@@ -543,7 +588,7 @@ Execute `update.sh` on an internet-connected system to update components:
 # Routine Sync: Check and update Zsh plugins, Neovim plugins, Treesitter parsers, and Mason
 update.sh
 
-# Toolchain Update: Check and update rg, fd, fzf, starship, lazygit, and zoxide
+# Toolchain Update: Check and update rg, fd, fzf, starship, lazygit, zoxide, bat, delta, and tealdeer
 update.sh --tools
 
 # Runtime Update: Download latest stable Neovim runtime into .local/opt
@@ -589,3 +634,31 @@ Follow this procedure to add a new tool to the environment:
     bundle.sh
     ```
 11. Verify that the new binary exists in the archive.
+
+---
+
+### 3.5 Machine-Specific Overrides (.zshrc.local and .gitconfig.local)
+
+The environment provides local configuration hooks.
+Use these hooks to define machine-specific settings without modifying tracked repository files.
+
+#### Shell Overrides (~/.zshrc.local)
+Create `~/.zshrc.local` to define machine-specific environment variables, proxies, or paths.
+Zsh sources `~/.zshrc.local` automatically at startup if the file exists:
+```bash
+# Example ~/.zshrc.local
+export HTTP_PROXY="http://proxy.example.internal:8080"
+export HTTPS_PROXY="http://proxy.example.internal:8080"
+```
+
+#### Git Identity Overrides (~/.gitconfig.local)
+The tracked `~/.gitconfig` file includes `~/.gitconfig.local` automatically.
+Create `~/.gitconfig.local` to configure your work identity or signing key:
+```ini
+[user]
+    name = Tyler
+    email = user@work-domain.internal
+    # signingkey = ~/.ssh/id_ed25519.pub
+```
+This configuration keeps your work identity separate from the public dotfiles repository.
+

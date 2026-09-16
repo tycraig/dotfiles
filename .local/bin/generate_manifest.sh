@@ -36,6 +36,9 @@ log_version "fzf" "fzf --version"
 log_version "Git" "git --version"
 log_version "Lazygit" "lazygit --version"
 log_version "Zoxide" "zoxide --version"
+log_version "bat" "bat --version"
+log_version "delta" "delta --version"
+log_version "tealdeer (tldr)" "tldr --version"
 
 # Static Formatters & Linters
 log_version "StyLua" "stylua --version"

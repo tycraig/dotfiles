@@ -25,7 +25,7 @@ get_latest_github_tag() {
 }
 
 # ==================================================
-# 1. CLI Tools (ripgrep, fd, fzf, starship, lazygit, zoxide)
+# 1. CLI Tools (ripgrep, fd, fzf, starship, lazygit, zoxide, bat, delta, tldr)
 # ==================================================
 update_cli_tools() {
     echo "─── Checking CLI Utilities ───"
@@ -143,6 +143,72 @@ update_cli_tools() {
         CHANGES_MADE=true
     else
         echo "  [=] zoxide is current ($current_zoxide)."
+    fi
+
+    # bat
+    local current_bat latest_bat
+    current_bat=$("$BIN_DIR/bat" --version 2>/dev/null | awk '{print $2}' || echo "none")
+    latest_bat=$(get_latest_github_tag "sharkdp/bat")
+    if [[ "$current_bat" != "$latest_bat" || "$FORCE" == true ]]; then
+        echo "  [+] Upgrading bat ($current_bat -> $latest_bat)..."
+        TMP_BAT=$(mktemp -d)
+        curl -sL "https://github.com/sharkdp/bat/releases/download/v${latest_bat}/bat-v${latest_bat}-x86_64-unknown-linux-musl.tar.gz" \
+            -o "$TMP_BAT/bat.tar.gz"
+        tar -xzf "$TMP_BAT/bat.tar.gz" -C "$TMP_BAT"
+        BAT_SRC=$(find "$TMP_BAT" -name "bat-v*" -type d | head -n 1)
+        install -m 755 "$BAT_SRC/bat" "$BIN_DIR/bat"
+        [ -f "$BAT_SRC/bat.1" ] && install -m 644 "$BAT_SRC/bat.1" "$MAN_DIR/bat.1"
+        [ -f "$BAT_SRC/autocomplete/bat.zsh" ] && install -m 644 "$BAT_SRC/autocomplete/bat.zsh" "$ZSH_COMP_DIR/_bat"
+        rm -rf "$TMP_BAT"
+        CHANGES_MADE=true
+    else
+        echo "  [=] bat is current ($current_bat)."
+    fi
+
+    # delta
+    local current_delta latest_delta
+    current_delta=$("$BIN_DIR/delta" --version 2>/dev/null | awk '{print $2}' || echo "none")
+    latest_delta=$(get_latest_github_tag "dandavison/delta")
+    if [[ "$current_delta" != "$latest_delta" || "$FORCE" == true ]]; then
+        echo "  [+] Upgrading delta ($current_delta -> $latest_delta)..."
+        TMP_DELTA=$(mktemp -d)
+        curl -sL "https://github.com/dandavison/delta/releases/download/${latest_delta}/delta-${latest_delta}-x86_64-unknown-linux-musl.tar.gz" \
+            -o "$TMP_DELTA/delta.tar.gz"
+        tar -xzf "$TMP_DELTA/delta.tar.gz" -C "$TMP_DELTA"
+        DELTA_SRC=$(find "$TMP_DELTA" -name "delta-*" -type d | head -n 1)
+        install -m 755 "$DELTA_SRC/delta" "$BIN_DIR/delta"
+        "$BIN_DIR/delta" --generate-completion zsh > "$ZSH_COMP_DIR/_delta" 2>/dev/null || true
+        chmod 644 "$ZSH_COMP_DIR/_delta" 2>/dev/null || true
+        if command -v help2man >/dev/null 2>&1; then
+            help2man -N -n "A syntax-highlighting pager for git, diff, and grep" "$BIN_DIR/delta" > "$MAN_DIR/delta.1" 2>/dev/null || true
+            chmod 644 "$MAN_DIR/delta.1" 2>/dev/null || true
+        fi
+        rm -rf "$TMP_DELTA"
+        CHANGES_MADE=true
+    else
+        echo "  [=] delta is current ($current_delta)."
+    fi
+
+    # tealdeer / tldr
+    local current_tldr latest_tldr
+    current_tldr=$("$BIN_DIR/tldr" --version 2>/dev/null | awk '{print $2}' || echo "none")
+    latest_tldr=$(get_latest_github_tag "tealdeer-rs/tealdeer")
+    if [[ "$current_tldr" != "$latest_tldr" || "$FORCE" == true ]]; then
+        echo "  [+] Upgrading tealdeer ($current_tldr -> $latest_tldr)..."
+        curl -sL "https://github.com/tealdeer-rs/tealdeer/releases/download/v${latest_tldr}/tealdeer-linux-x86_64-musl" \
+            -o "$BIN_DIR/tldr"
+        chmod 755 "$BIN_DIR/tldr"
+        ln -sf "$BIN_DIR/tldr" "$BIN_DIR/tealdeer"
+        curl -sLo "$ZSH_COMP_DIR/_tldr" "https://raw.githubusercontent.com/tealdeer-rs/tealdeer/main/completion/zsh_tealdeer"
+        chmod 644 "$ZSH_COMP_DIR/_tldr" 2>/dev/null || true
+        if command -v help2man >/dev/null 2>&1; then
+            help2man -N -n "A fast tldr client written in Rust" "$BIN_DIR/tldr" > "$MAN_DIR/tldr.1" 2>/dev/null || true
+            chmod 644 "$MAN_DIR/tldr.1" 2>/dev/null || true
+        fi
+        "$BIN_DIR/tldr" --update 2>/dev/null || true
+        CHANGES_MADE=true
+    else
+        echo "  [=] tealdeer is current ($current_tldr)."
     fi
 
     command -v mandb >/dev/null 2>&1 && mandb -u >/dev/null 2>&1 || true

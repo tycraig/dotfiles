@@ -1,5 +1,5 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-16 21:39:05 UTC
+Generated on: 2026-09-16 22:05:26 UTC
 Hostname: fedora
 Architecture: x86_64
 =================================
@@ -39,6 +39,15 @@ commit=17cb09fa7b08bc96d9f0e81b91f4720fc1a36700, build date=2026-09-13T05:42:30Z
 
 [Zoxide]
 zoxide 0.10.0
+
+[bat]
+bat 0.26.1 (979ba22)
+
+[delta]
+delta 0.19.2
+
+[tealdeer (tldr)]
+tealdeer 1.9.0
 
 [StyLua]
 stylua 2.5.2

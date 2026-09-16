@@ -86,6 +86,11 @@ if (( $+widgets[fzf-history-widget] )); then
     bindkey -M vicmd '^T' fzf-file-widget
 fi
 
+# Use bat for fzf file preview if available
+if command -v bat >/dev/null 2>&1; then
+    export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :300 {}'"
+fi
+
 # ==================================================
 # Aliases
 # ==================================================
@@ -124,3 +129,6 @@ export PATH="/home/tyler/.local/bin:$PATH"
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
 fi
+
+# Source machine-specific local overrides if present
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"

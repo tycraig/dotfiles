@@ -142,7 +142,7 @@ fi
 
 # Headless sanity tests
 FAILURES=0
-for cmd in rg fd fzf starship nvim lazygit zoxide; do
+for cmd in rg fd fzf starship nvim lazygit zoxide bat delta tldr; do
     if command -v "$cmd" >/dev/null 2>&1; then
         echo "  [✓] $cmd is available."
     else

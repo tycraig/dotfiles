@@ -22,6 +22,10 @@ BIN_WHITELIST=(
     "update.sh"
     "zoxide"
     "uninstall.sh"
+    "bat"
+    "delta"
+    "tldr"
+    "tealdeer"
 )
 
 echo "==> Generating latest version manifest..."
@@ -67,6 +71,7 @@ done
 [ -d ".local/share/man" ] && TARGETS+=(".local/share/man")
 [ -d ".local/share/fonts" ] && TARGETS+=(".local/share/fonts")
 [ -d ".local/share/gef" ] && TARGETS+=(".local/share/gef")
+[ -d ".cache/tealdeer" ] && TARGETS+=(".cache/tealdeer")
 
 # 4. Neovim Ecosystem (Lazy plugins, compiled Treesitter parsers, Mason packages)
 [ -d ".local/share/nvim/lazy" ] && TARGETS+=(".local/share/nvim/lazy")
@@ -98,10 +103,19 @@ echo "==> Generating SHA-256 checksums..."
 sha256sum "${OUTPUT_DIR}/${ARCHIVE_NAME}" > "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
 ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256" "${OUTPUT_DIR}/dev-bundle-latest.tar.zst.sha256"
 
+if [ -f "$HOME/.ssh/id_ed25519" ]; then
+    echo "==> Signing bundle with SSH key (~/.ssh/id_ed25519)..."
+    ssh-keygen -Y sign -f "$HOME/.ssh/id_ed25519" -n file "${OUTPUT_DIR}/${ARCHIVE_NAME}" 2>/dev/null || true
+    if [ -f "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" ]; then
+        ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" "${OUTPUT_DIR}/dev-bundle-latest.tar.zst.sig"
+    fi
+fi
+
 SIZE=$(du -h "${OUTPUT_DIR}/${ARCHIVE_NAME}" | cut -f1)
 echo "================================================="
 echo "SUCCESS: Optimized bundle created!"
-echo "Archive:  ${OUTPUT_DIR}/${ARCHIVE_NAME} ($SIZE)"
-echo "Checksum: ${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
-echo "Symlink:  $LATEST_LINK"
+echo "Archive:   ${OUTPUT_DIR}/${ARCHIVE_NAME} ($SIZE)"
+echo "Checksum:  ${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
+[ -f "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" ] && echo "Signature: ${OUTPUT_DIR}/${ARCHIVE_NAME}.sig"
+echo "Symlink:   $LATEST_LINK"
 echo "================================================="
