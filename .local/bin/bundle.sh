@@ -109,6 +109,20 @@ if [ -f "$HOME/.ssh/id_ed25519" ]; then
     if [ -f "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" ]; then
         ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" "${OUTPUT_DIR}/dev-bundle-latest.tar.zst.sig"
     fi
+
+    # Generate companion allowed_signers for release distribution
+    if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+        echo "==> Generating allowed_signers public key mapping..."
+        PUBKEY=$(cat "$HOME/.ssh/id_ed25519.pub")
+        PRINCIPAL=$(awk '{print $3}' "$HOME/.ssh/id_ed25519.pub")
+        [ -z "$PRINCIPAL" ] && PRINCIPAL=$(git config user.email 2>/dev/null || echo "$USER@$(hostname)")
+        echo "$PRINCIPAL $PUBKEY" > "${OUTPUT_DIR}/allowed_signers"
+    fi
+fi
+
+# Copy release manifest to output directory
+if [ -f "$HOME/.local/env-manifest.txt" ]; then
+    cp -f "$HOME/.local/env-manifest.txt" "${OUTPUT_DIR}/env-manifest.txt"
 fi
 
 SIZE=$(du -h "${OUTPUT_DIR}/${ARCHIVE_NAME}" | cut -f1)
@@ -117,5 +131,7 @@ echo "SUCCESS: Optimized bundle created!"
 echo "Archive:   ${OUTPUT_DIR}/${ARCHIVE_NAME} ($SIZE)"
 echo "Checksum:  ${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
 [ -f "${OUTPUT_DIR}/${ARCHIVE_NAME}.sig" ] && echo "Signature: ${OUTPUT_DIR}/${ARCHIVE_NAME}.sig"
+[ -f "${OUTPUT_DIR}/allowed_signers" ] && echo "Signers:   ${OUTPUT_DIR}/allowed_signers"
+[ -f "${OUTPUT_DIR}/env-manifest.txt" ] && echo "Manifest:  ${OUTPUT_DIR}/env-manifest.txt"
 echo "Symlink:   $LATEST_LINK"
 echo "================================================="
