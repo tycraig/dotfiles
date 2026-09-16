@@ -100,8 +100,8 @@ tar --exclude="*.log" \
 ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}" "$LATEST_LINK"
 
 echo "==> Generating SHA-256 checksums..."
-sha256sum "${OUTPUT_DIR}/${ARCHIVE_NAME}" > "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
-ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256" "${OUTPUT_DIR}/dev-bundle-latest.tar.zst.sha256"
+(cd "${OUTPUT_DIR}" && sha256sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256")
+(cd "${OUTPUT_DIR}" && sha256sum "dev-bundle-latest.tar.zst" > "dev-bundle-latest.tar.zst.sha256")
 
 if [ -f "$HOME/.ssh/id_ed25519" ]; then
     echo "==> Signing bundle with SSH key (~/.ssh/id_ed25519)..."
