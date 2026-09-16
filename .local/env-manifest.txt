@@ -1,0 +1,68 @@
+=== DEV ENVIRONMENT MANIFEST ===
+Generated on: 2026-09-16 16:16:08 UTC
+Hostname: fedora
+Architecture: x86_64
+=================================
+
+[Zsh]
+zsh 5.9 (x86_64-redhat-linux-gnu)
+
+[Tmux]
+tmux 3.7c
+
+[Starship]
+starship 1.26.0
+branch:main
+commit_hash:fca92d8
+
+[Neovim]
+NVIM v0.12.5
+Build type: Release
+LuaJIT 2.1.1774638290
+
+[Ripgrep (rg)]
+ripgrep 15.2.0 (rev e89fff89ac)
+
+features:+pcre2
+
+[fd-find]
+fd 10.5.0
+
+[fzf]
+0.74.4 (a140afeb)
+
+[Git]
+git version 2.55.0
+
+[StyLua]
+stylua 2.5.2
+
+[shfmt]
+v3.14.1
+
+[Ruff]
+ruff 0.16.7
+
+=== MASON INSTALLED BINARIES ===
+asmfmt
+asm-lsp
+bash-language-server
+clangd
+clang-format
+clang-format-diff.py
+codelldb
+debugpy
+debugpy-adapter
+docker-language-server
+git-clang-format
+lua-language-server
+neocmakelsp
+pyright
+pyright-langserver
+pytest-language-server
+ruff
+rust-analyzer
+shfmt
+stylua
+taplo
+
