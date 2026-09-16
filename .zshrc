@@ -2,9 +2,17 @@
 # Environment Variables
 # ==================================================
 
-if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
-    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-fi
+# Enforce unique entries in PATH (prevents duplicates on re-sourcing)
+typeset -U path PATH
+
+# Prepend custom directories in order of execution priority
+path=(
+  "$HOME/.cargo/bin"
+  "$HOME/.local/bin"
+  "$HOME/bin"
+  "$HOME/.local/share/nvim/mason/bin"
+  $path
+)
 export PATH
 
 export EDITOR="nvim"
