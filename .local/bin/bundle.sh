@@ -21,6 +21,7 @@ BIN_WHITELIST=(
     "starship"
     "update.sh"
     "zoxide"
+    "uninstall.sh"
 )
 
 echo "==> Generating latest version manifest..."

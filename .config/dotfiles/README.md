@@ -410,6 +410,81 @@ Text copied in Neovim or tmux transfers to the Windows system clipboard through 
 
 ---
 
+### 2.3 Environment Removal and Baseline Reset (uninstall.sh)
+
+Use `uninstall.sh` to remove the offline environment and restore your previous baseline configuration.
+
+#### Automated Actions
+The `uninstall.sh` script executes these actions:
+1. Deletes repository-tracked dotfiles from `$HOME`.
+2. Deletes the bare Git tracking repository at `~/.dotfiles`.
+3. Restores your original dotfiles from the most recent backup directory in `~/.dotfiles-backup/`.
+4. Removes the interactive Zsh execution guard from `~/.bashrc`.
+5. Removes whitelisted environment binaries from `~/.local/bin/`.
+6. Removes application runtimes, Mason packages, Lazy plugins, and GEF assets.
+7. Purges environment manual pages and rebuilds manual page and font caches.
+
+#### Removal Procedure
+Execute `uninstall.sh` directly if the environment is active:
+```bash
+~/.local/bin/uninstall.sh
+```
+
+To extract and execute `uninstall.sh` directly from a deployment archive:
+```bash
+tar -I zstd -xf dev-bundle-latest.tar.zst .local/bin/uninstall.sh
+~/.local/bin/uninstall.sh
+```
+
+Pass the `--yes` or `-y` flag to bypass the interactive confirmation prompt:
+```bash
+~/.local/bin/uninstall.sh --yes
+```
+
+Reset your terminal session after uninstallation:
+```bash
+exec bash
+```
+
+---
+
+### 2.4 Offline Deployment Verification Procedure
+
+Follow this test procedure to verify offline installation on an isolated target system:
+
+1. Copy `dev-bundle-latest.tar.zst` and `dev-bundle-latest.tar.zst.sha256` to the target system.
+2. Remove any previous test installation:
+   ```bash
+   tar -I zstd -xf dev-bundle-latest.tar.zst .local/bin/uninstall.sh
+   ~/.local/bin/uninstall.sh --yes
+   ```
+3. Disconnect network interfaces to simulate an air-gapped system:
+   ```bash
+   nmcli networking off
+   ```
+4. Verify the SHA-256 archive checksum:
+   ```bash
+   sha256sum -c dev-bundle-latest.tar.zst.sha256
+   ```
+5. Execute the deployment script:
+   ```bash
+   ~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.zst"
+   ```
+6. Start the shell and verify that all tools function offline:
+   ```bash
+   exec zsh
+   lazygit --version
+   zoxide --version
+   nvim --headless "+qa"
+   gdb -batch -ex "gef" -ex "quit"
+   ```
+7. Re-enable networking after verification:
+   ```bash
+   nmcli networking on
+   ```
+
+---
+
 ## 3. Maintenance and Updates (Factory Host)
 
 ### 3.1 Directory Structure
