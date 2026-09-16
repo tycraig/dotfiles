@@ -1,5 +1,5 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-16 16:59:14 UTC
+Generated on: 2026-09-16 18:21:31 UTC
 Hostname: fedora
 Architecture: x86_64
 =================================
@@ -35,13 +35,13 @@ fd 10.5.0
 git version 2.55.0
 
 [StyLua]
-NOT FOUND
+stylua 2.5.2
 
 [shfmt]
-NOT FOUND
+v3.14.1
 
 [Ruff]
-NOT FOUND
+ruff 0.16.7
 
 === MASON INSTALLED BINARIES ===
 asmfmt
