@@ -1,5 +1,5 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-16 18:21:31 UTC
+Generated on: 2026-09-16 20:51:27 UTC
 Hostname: fedora
 Architecture: x86_64
 =================================
@@ -34,6 +34,12 @@ fd 10.5.0
 [Git]
 git version 2.55.0
 
+[Lazygit]
+commit=17cb09fa7b08bc96d9f0e81b91f4720fc1a36700, build date=2026-09-13T05:42:30Z, build source=binaryRelease, version=0.65.1, os=linux, arch=amd64, git version=2.55.0
+
+[Zoxide]
+zoxide 0.10.0
+
 [StyLua]
 stylua 2.5.2
 
@@ -42,6 +48,9 @@ v3.14.1
 
 [Ruff]
 ruff 0.16.7
+
+[GEF]
+Installed (/home/tyler/.local/share/gef/gef.py)
 
 === MASON INSTALLED BINARIES ===
 asmfmt

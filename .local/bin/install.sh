@@ -107,7 +107,7 @@ if [ -d "$HOME/.local/share/fonts" ] && command -v fc-cache >/dev/null 2>&1; the
 fi
 
 if [ -d "$HOME/.local/share/man" ] && command -v mandb >/dev/null 2>&1; then
-    mandb -u 2>/dev/null || true
+    mandb -u -q "$HOME/.local/share/man" 2>/dev/null || mandb -u 2>/dev/null || true
 fi
 
 # --------------------------------------------------
@@ -137,7 +137,7 @@ fi
 
 # Headless sanity tests
 FAILURES=0
-for cmd in rg fd fzf starship nvim; do
+for cmd in rg fd fzf starship nvim lazygit zoxide; do
     if command -v "$cmd" >/dev/null 2>&1; then
         echo "  [✓] $cmd is available."
     else

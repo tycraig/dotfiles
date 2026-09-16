@@ -25,7 +25,7 @@ get_latest_github_tag() {
 }
 
 # ==================================================
-# 1. CLI Tools (ripgrep, fd, fzf, starship)
+# 1. CLI Tools (ripgrep, fd, fzf, starship, lazygit, zoxide)
 # ==================================================
 update_cli_tools() {
     echo "─── Checking CLI Utilities ───"
@@ -103,6 +103,46 @@ update_cli_tools() {
         CHANGES_MADE=true
     else
         echo "  [=] fzf is current ($current_fzf)."
+    fi
+
+    # Lazygit
+    local current_lazygit latest_lazygit
+    current_lazygit=$("$BIN_DIR/lazygit" --version 2>/dev/null | grep -o 'version=[^,]*' | head -n1 | cut -d= -f2 || echo "none")
+    latest_lazygit=$(get_latest_github_tag "jesseduffield/lazygit")
+    if [[ "$current_lazygit" != "$latest_lazygit" || "$FORCE" == true ]]; then
+        echo "  [+] Upgrading lazygit ($current_lazygit -> $latest_lazygit)..."
+        TMP_LG=$(mktemp -d)
+        curl -sL "https://github.com/jesseduffield/lazygit/releases/download/v${latest_lazygit}/lazygit_${latest_lazygit}_Linux_x86_64.tar.gz" \
+            -o "$TMP_LG/lazygit.tar.gz"
+        tar -xzf "$TMP_LG/lazygit.tar.gz" -C "$TMP_LG"
+        install -m 755 "$TMP_LG/lazygit" "$BIN_DIR/lazygit"
+        rm -rf "$TMP_LG"
+        CHANGES_MADE=true
+    else
+        echo "  [=] lazygit is current ($current_lazygit)."
+    fi
+
+    # Zoxide
+    local current_zoxide latest_zoxide
+    current_zoxide=$("$BIN_DIR/zoxide" --version 2>/dev/null | head -n1 | awk '{print $2}' || echo "none")
+    latest_zoxide=$(get_latest_github_tag "ajeetdsouza/zoxide")
+    if [[ "$current_zoxide" != "$latest_zoxide" || "$FORCE" == true ]]; then
+        echo "  [+] Upgrading zoxide ($current_zoxide -> $latest_zoxide)..."
+        TMP_ZO=$(mktemp -d)
+        curl -sL "https://github.com/ajeetdsouza/zoxide/releases/download/v${latest_zoxide}/zoxide-${latest_zoxide}-x86_64-unknown-linux-musl.tar.gz" \
+            -o "$TMP_ZO/zoxide.tar.gz"
+        tar -xzf "$TMP_ZO/zoxide.tar.gz" -C "$TMP_ZO"
+        install -m 755 "$TMP_ZO/zoxide" "$BIN_DIR/zoxide"
+        curl -sLo "$ZSH_COMP_DIR/_zoxide" "https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/contrib/completions/_zoxide"
+        chmod 644 "$ZSH_COMP_DIR/_zoxide"
+        for manpage in zoxide.1 zoxide-add.1 zoxide-import.1 zoxide-init.1 zoxide-query.1 zoxide-remove.1; do
+            curl -sLo "$MAN_DIR/$manpage" "https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/man/man1/$manpage"
+            chmod 644 "$MAN_DIR/$manpage"
+        done
+        rm -rf "$TMP_ZO"
+        CHANGES_MADE=true
+    else
+        echo "  [=] zoxide is current ($current_zoxide)."
     fi
 
     command -v mandb >/dev/null 2>&1 && mandb -u >/dev/null 2>&1 || true

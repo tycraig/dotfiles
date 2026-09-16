@@ -65,10 +65,9 @@ precmd_functions+=(zle-keymap-select)
 # ==================================================
 
 # Add my site-functions to fpath before compinit
-fpath=(~/.local/share/zsh/site-functions $fpath)
+fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
 
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit
 
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # Case-insensitive tab completion
@@ -99,6 +98,8 @@ alias grep="grep --color=auto"
 
 # Alias to interact with dotfiles repo
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+alias lg="lazygit"
+alias dotgit="lazygit --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 
 # ==================================================
 # Plugins 
@@ -115,3 +116,11 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 # ==================================================
 
 eval "$(starship init zsh)"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/tyler/.local/bin:$PATH"
+
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+fi

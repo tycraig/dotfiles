@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PATH="$HOME/.local/share/nvim/mason/bin:$HOME/.local/bin:$PATH"
+
 MANIFEST_FILE="${HOME}/.local/env-manifest.txt"
 mkdir -p "$(dirname "$MANIFEST_FILE")"
 
@@ -32,11 +34,23 @@ log_version "Ripgrep (rg)" "rg --version"
 log_version "fd-find" "fd --version"
 log_version "fzf" "fzf --version"
 log_version "Git" "git --version"
+log_version "Lazygit" "lazygit --version"
+log_version "Zoxide" "zoxide --version"
 
 # Static Formatters & Linters
 log_version "StyLua" "stylua --version"
 log_version "shfmt" "shfmt --version"
 log_version "Ruff" "ruff --version"
+
+# Debugging & Binary Analysis
+echo "[GEF]" >>"$MANIFEST_FILE"
+GEF_SCRIPT="${HOME}/.local/share/gef/gef.py"
+if [ -f "$GEF_SCRIPT" ]; then
+    echo "Installed (${GEF_SCRIPT})" >>"$MANIFEST_FILE"
+else
+    echo "NOT FOUND" >>"$MANIFEST_FILE"
+fi
+echo "" >>"$MANIFEST_FILE"
 
 # Mason Toolchain Binaries
 MASON_BIN="${HOME}/.local/share/nvim/mason/bin"
