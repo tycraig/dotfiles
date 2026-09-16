@@ -12,7 +12,7 @@ DOTFILES_GIT="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 # --------------------------------------------------
 # 1. Distro Detection & Host Dependencies
 # --------------------------------------------------
-echo "[1/6] Checking host dependencies..."
+echo "[1/5] Checking host dependencies..."
 if [ "$(uname -m)" != "x86_64" ]; then
     echo "[-] ERROR: This offline environment bundle is built for x86_64 hosts only." >&2
     exit 1
@@ -53,25 +53,20 @@ if [ ${#MISSING[@]} -gt 0 ]; then
     fi
 fi
 
-# --------------------------------------------------
-# 2. Extract Archive (If Provided)
-# --------------------------------------------------
-ARCHIVE_FILE="${1:-}"
-if [ -n "$ARCHIVE_FILE" ] && [ -f "$ARCHIVE_FILE" ]; then
-    echo "[2/6] Extracting archive payload from $ARCHIVE_FILE..."
-    if [[ "$ARCHIVE_FILE" == *.tar.zst ]]; then
-        tar -I zstd -xf "$ARCHIVE_FILE" -C "$HOME"
+# Optional fallback: extract archive if explicitly provided as an argument
+if [ -n "${1:-}" ] && [ -f "${1:-}" ]; then
+    echo "[+] Archive argument detected. Unpacking ${1} into $HOME..."
+    if [[ "${1}" == *.tar.zst ]]; then
+        tar -I zstd -xf "${1}" -C "$HOME"
     else
-        tar -xzf "$ARCHIVE_FILE" -C "$HOME"
+        tar -xzf "${1}" -C "$HOME"
     fi
-else
-    echo "[2/6] Archive already extracted. Proceeding with configuration..."
 fi
 
 # --------------------------------------------------
-# 3. Force Checkout Tracked Dotfiles
+# 2. Force Checkout Tracked Dotfiles
 # --------------------------------------------------
-echo "[3/6] Populating dotfiles into $HOME..."
+echo "[2/5] Populating dotfiles into $HOME..."
 if [ -d "$HOME/.dotfiles" ]; then
     $DOTFILES_GIT config --local status.showUntrackedFiles no
 
@@ -91,9 +86,9 @@ if [ -d "$HOME/.dotfiles" ]; then
 fi
 
 # --------------------------------------------------
-# 4. Runtime Links & Permissions
+# 3. Runtime Links & Permissions
 # --------------------------------------------------
-echo "[4/6] Setting executable permissions and symlinks..."
+echo "[3/5] Setting executable permissions and symlinks..."
 chmod +x "$HOME/.local/bin/"* 2>/dev/null || true
 
 if [ -d "$HOME/.local/share/nvim/mason/bin" ]; then
@@ -107,9 +102,9 @@ if [ -x "$HOME/.local/opt/nvim-linux-x86_64/bin/nvim" ]; then
 fi
 
 # --------------------------------------------------
-# 5. Fonts, Manuals, and Terminfo
+# 4. Fonts, Manuals, and Terminfo
 # --------------------------------------------------
-echo "[5/6] Registering fonts, terminfo, and manpages..."
+echo "[4/5] Registering fonts, terminfo, and manpages..."
 if [ -d "$HOME/.local/share/fonts" ] && command -v fc-cache >/dev/null 2>&1; then
     fc-cache -f "$HOME/.local/share/fonts" 2>/dev/null || true
 fi
@@ -119,9 +114,9 @@ if [ -d "$HOME/.local/share/man" ] && command -v mandb >/dev/null 2>&1; then
 fi
 
 # --------------------------------------------------
-# 6. Shell Activation & Health Check
+# 5. Shell Activation & Health Check
 # --------------------------------------------------
-echo "[6/6] Configuring login shell and verifying health..."
+echo "[5/5] Configuring login shell and verifying health..."
 ZSH_BIN=$(command -v zsh || echo "$HOME/.local/bin/zsh")
 if [ -x "$ZSH_BIN" ]; then
     CURRENT_SHELL=$(basename "$SHELL")

@@ -356,23 +356,19 @@ Target deployment archives use Zstandard compression (`dev-bundle-latest.tar.zst
 Copy `dev-bundle-latest.tar.zst` and `dev-bundle-latest.tar.zst.sha256` to the target machine.
 Place the files in the `$HOME` directory.
 
-#### Step 3: Verify archive checksum and execute deployment script
+#### Step 3: Verify checksum and extract archive
 Verify the SHA-256 checksum first:
 ```bash
 sha256sum -c dev-bundle-latest.tar.zst.sha256
 ```
 
-Execute the installation script with the archive path:
-```bash
-~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.zst"
-```
-
-If you extract the bundle manually, use this command:
+Extract the deployment archive into your home directory:
 ```bash
 tar -I zstd -xf dev-bundle-latest.tar.zst -C "$HOME"
 ```
 
-Execute `install.sh` without arguments to complete configuration:
+#### Step 4: Execute configuration script
+Execute the post-extraction configuration script:
 ```bash
 ~/.local/bin/install.sh
 ```
@@ -388,7 +384,7 @@ The `install.sh` script executes these actions:
 8. Configures Zsh as the default shell, or appends an execution guard to `~/.bashrc`.
 9. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`).
 
-#### Step 4: Start environment
+#### Step 5: Start environment
 Execute this command to start your session:
 ```bash
 exec zsh
@@ -466,11 +462,15 @@ Follow this test procedure to verify offline installation on an isolated target 
    ```bash
    sha256sum -c dev-bundle-latest.tar.zst.sha256
    ```
-5. Execute the deployment script:
+5. Extract the archive into your home directory:
    ```bash
-   ~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.zst"
+   tar -I zstd -xf dev-bundle-latest.tar.zst -C "$HOME"
    ```
-6. Start the shell and verify that all tools function offline:
+6. Execute the post-extraction configuration script:
+   ```bash
+   ~/.local/bin/install.sh
+   ```
+7. Start the shell and verify that all tools function offline:
    ```bash
    exec zsh
    lazygit --version
@@ -478,7 +478,7 @@ Follow this test procedure to verify offline installation on an isolated target 
    nvim --headless "+qa"
    gdb -batch -ex "gef" -ex "quit"
    ```
-7. Re-enable networking after verification:
+8. Re-enable networking after verification:
    ```bash
    nmcli networking on
    ```
