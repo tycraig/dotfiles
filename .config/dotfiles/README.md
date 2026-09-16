@@ -415,15 +415,16 @@ Execute the post-extraction configuration script:
 ```
 
 The `install.sh` script executes these actions:
-1. Moves conflicting dotfiles (`.zshrc`, `.tmux.conf`, Neovim data) to `~/.dotfiles-backup/<timestamp>/`.
-2. Restores bare Git tracking in `~/.dotfiles`.
-3. Sets executable permissions on binaries in `~/.local/bin` and Mason directories.
-4. Creates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
-5. Compiles WezTerm terminfo definitions into `~/.terminfo/`.
-6. Refreshes font configuration caches for JetBrains Mono Nerd Font.
-7. Rebuilds manual page databases.
-8. Configures Zsh as the default shell, or appends an execution guard to `~/.bashrc`.
-9. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`).
+1. Migrates an existing `~/.gitconfig` to `~/.gitconfig.local` to preserve your host Git settings.
+2. Moves conflicting dotfiles (`.zshrc`, `.tmux.conf`, Neovim data) to `~/.dotfiles-backup/<timestamp>/`.
+3. Restores bare Git tracking in `~/.dotfiles`.
+4. Sets executable permissions on binaries in `~/.local/bin` and Mason directories.
+5. Creates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
+6. Compiles WezTerm terminfo definitions into `~/.terminfo/`.
+7. Refreshes font configuration caches for JetBrains Mono Nerd Font.
+8. Rebuilds manual page databases.
+9. Configures Zsh as the default shell, or appends an execution guard to `~/.bashrc`.
+10. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`, `bat`, `delta`, `tldr`).
 
 #### Step 5: Start environment
 Execute this command to start your session:
@@ -653,7 +654,9 @@ export HTTPS_PROXY="http://proxy.example.internal:8080"
 
 #### Git Identity Overrides (~/.gitconfig.local)
 The tracked `~/.gitconfig` file includes `~/.gitconfig.local` automatically.
-Create `~/.gitconfig.local` to configure your work identity or signing key:
+During deployment, `install.sh` automatically migrates any pre-existing `~/.gitconfig` into `~/.gitconfig.local`.
+This migration retains your pre-existing user name, email, credentials, and work proxies.
+If `~/.gitconfig.local` does not exist, create it manually to configure your work identity or signing key:
 ```ini
 [user]
     name = Tyler
@@ -661,4 +664,5 @@ Create `~/.gitconfig.local` to configure your work identity or signing key:
     # signingkey = ~/.ssh/id_ed25519.pub
 ```
 This configuration keeps your work identity separate from the public dotfiles repository.
+
 

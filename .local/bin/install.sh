@@ -70,6 +70,17 @@ echo "[2/5] Populating dotfiles into $HOME..."
 if [ -d "$HOME/.dotfiles" ]; then
     $DOTFILES_GIT config --local status.showUntrackedFiles no
 
+    # Auto-migrate pre-existing ~/.gitconfig to ~/.gitconfig.local if not already configured
+    if [ -s "$HOME/.gitconfig" ] && [ ! -f "$HOME/.gitconfig.local" ]; then
+        if ! $DOTFILES_GIT diff --quiet HEAD -- "$HOME/.gitconfig" 2>/dev/null; then
+            echo "[+] Pre-existing ~/.gitconfig detected. Migrating to ~/.gitconfig.local..."
+            cp -a "$HOME/.gitconfig" "$HOME/.gitconfig.local"
+            # Remove recursive include directive if present
+            git config -f "$HOME/.gitconfig.local" --unset-all include.path "^~/.gitconfig.local$" 2>/dev/null || true
+            echo "  [✓] Host Git settings retained in ~/.gitconfig.local."
+        fi
+    fi
+
     # Back up existing files that collide with repository files
     mkdir -p "$BACKUP_DIR"
     TRACKED_FILES=$($DOTFILES_GIT ls-tree -r --name-only HEAD)
@@ -158,9 +169,20 @@ else
     FAILURES=$((FAILURES + 1))
 fi
 
-# Clean up empty backup directory
-if [ -d "$BACKUP_DIR" ] && [ -z "$(ls -A "$BACKUP_DIR")" ]; then
-    rm -rf "$BACKUP_DIR"
+# Clean up empty backup directory or report location
+if [ -d "$BACKUP_DIR" ]; then
+    if [ -z "$(ls -A "$BACKUP_DIR")" ]; then
+        rm -rf "$BACKUP_DIR"
+    else
+        echo "[+] Colliding dotfiles safely backed up to: $BACKUP_DIR"
+    fi
+fi
+
+if [ ! -f "$HOME/.gitconfig.local" ]; then
+    echo "[!] Notice: ~/.gitconfig.local not found."
+    echo "    Configure your Git identity with:"
+    echo "      git config -f ~/.gitconfig.local user.name \"Your Name\""
+    echo "      git config -f ~/.gitconfig.local user.email \"user@example.com\""
 fi
 
 echo "================================================="
@@ -171,3 +193,4 @@ else
 fi
 echo "================================================="
 echo "Reload session: exec zsh"
+
