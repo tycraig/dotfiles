@@ -13,6 +13,10 @@ DOTFILES_GIT="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 # 1. Distro Detection & Host Dependencies
 # --------------------------------------------------
 echo "[1/6] Checking host dependencies..."
+if [ "$(uname -m)" != "x86_64" ]; then
+    echo "[-] ERROR: This offline environment bundle is built for x86_64 hosts only." >&2
+    exit 1
+fi
 HAS_SUDO=false
 if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
     HAS_SUDO=true
@@ -55,7 +59,11 @@ fi
 ARCHIVE_FILE="${1:-}"
 if [ -n "$ARCHIVE_FILE" ] && [ -f "$ARCHIVE_FILE" ]; then
     echo "[2/6] Extracting archive payload from $ARCHIVE_FILE..."
-    tar -xzf "$ARCHIVE_FILE" -C "$HOME"
+    if [[ "$ARCHIVE_FILE" == *.tar.zst ]]; then
+        tar -I zstd -xf "$ARCHIVE_FILE" -C "$HOME"
+    else
+        tar -xzf "$ARCHIVE_FILE" -C "$HOME"
+    fi
 else
     echo "[2/6] Archive already extracted. Proceeding with configuration..."
 fi
@@ -127,7 +135,9 @@ if [ -x "$ZSH_BIN" ]; then
 
 # Launch Zsh for interactive sessions if not default
 if [ -t 1 ] && [ -n "$PS1" ] && command -v zsh >/dev/null 2>&1; then
-    exec zsh
+    if zsh -c "exit 0" 2>/dev/null; then
+        exec zsh
+    fi
 fi
 BASH_EOF
             fi

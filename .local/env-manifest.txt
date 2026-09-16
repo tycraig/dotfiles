@@ -1,5 +1,5 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-16 20:51:27 UTC
+Generated on: 2026-09-16 21:16:05 UTC
 Hostname: fedora
 Architecture: x86_64
 =================================

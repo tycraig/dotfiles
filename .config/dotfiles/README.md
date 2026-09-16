@@ -1,7 +1,7 @@
 # Development Environment Technical Specification and Operator Manual
 
 This document provides technical instructions and reference tables for the portable offline development environment.
-The environment contains Neovim (LazyVim), Zsh, tmux, and WezTerm.
+The environment contains Neovim (LazyVim), Zsh, tmux, WezTerm, lazygit, zoxide, and GEF.
 You can run this environment directly on a Linux operating system, or connect to a Linux system through SSH from a Windows host.
 
 ---
@@ -27,7 +27,7 @@ You can run this environment directly on a Linux operating system, or connect to
 | `gg` | Move cursor to the first line of the file |
 | `G` | Move cursor to the last line of the file |
 | `:<number>` | Move cursor to line number `<number>` |
-| `%` | Move cursor to matching parent, bracket, or brace |
+| `%` | Move cursor to matching parenthesis, bracket, or brace |
 | `f<char>` | Move cursor forward to character `<char>` on current line |
 | `F<char>` | Move cursor backward to character `<char>` on current line |
 | `t<char>` | Move cursor forward to one character before `<char>` |
@@ -53,7 +53,7 @@ You can run this environment directly on a Linux operating system, or connect to
 | `.` | Repeat previous editing action |
 
 #### Text Object Operations
-*Usage: Combine an operator (`d` for delete, `c` for change, `y` for copy) with an object scope (`i` for inner, `a` for around).*
+Combine an operator (`d` for delete, `c` for change, `y` for copy) with an object scope (`i` for inner, `a` for around).
 
 | Keybinding | Action |
 | :--- | :--- |
@@ -99,7 +99,7 @@ You can run this environment directly on a Linux operating system, or connect to
 ---
 
 ### 1.2 Terminal Multiplexing (tmux)
-*Default Prefix:* `Ctrl+a`
+Default prefix key: `Ctrl+a`.
 
 #### Window and Session Controls
 | Keybinding | Action |
@@ -142,7 +142,7 @@ You can run this environment directly on a Linux operating system, or connect to
 ---
 
 ### 1.3 Neovim and LazyVim Reference
-*Leader Key:* `<Space>`
+Leader key: `<Space>`.
 
 #### File and Buffer Navigation
 | Keybinding | Action |
@@ -263,24 +263,88 @@ You can run this environment directly on a Linux operating system, or connect to
 
 ---
 
+### 1.6 Lazygit Reference
+
+Use lazygit for terminal-based Git repository management.
+
+#### Shell Commands
+| Command | Action |
+| :--- | :--- |
+| `lg` | Open lazygit in current Git repository |
+| `dotgit` | Open lazygit for the bare dotfiles repository (`~/.dotfiles`) |
+
+#### Primary Keybindings
+| Keybinding | Action |
+| :--- | :--- |
+| `1` - `5` | Jump to panel (1: Status, 2: Files, 3: Branches, 4: Commits, 5: Stash) |
+| `Space` | Stage or unstage selected file or change |
+| `c` | Open commit dialog |
+| `P` | Push commits to remote repository |
+| `p` | Pull commits from remote repository |
+| `z` | Undo previous Git operation |
+| `d` | Discard changes in selected file or hunk |
+| `q` | Exit lazygit |
+| `?` | Display keybinding help menu |
+
+---
+
+### 1.7 Smart Directory Navigation (Zoxide)
+
+Zoxide tracks frequently used directories and calculates directory rankings based on access frequency.
+
+#### Commands
+| Command | Action |
+| :--- | :--- |
+| `z <dir>` | Navigate directly to directory path `<dir>` |
+| `z <pattern>` | Navigate to highest-ranked matching directory |
+| `zi <pattern>` | Open interactive selection filtered by `<pattern>` with fzf |
+| `z -` | Navigate to previous working directory |
+| `z ..` | Navigate to parent directory |
+| `zi` | Open interactive selection with fzf |
+
+---
+
+### 1.8 Low-Level Debugging (GDB & GEF)
+
+GEF extends GDB with architecture context, memory mapping, and exploit development features.
+
+#### Session Startup
+Start GDB with a target binary:
+```bash
+gdb <executable>
+```
+
+#### Key GEF Commands
+| Command | Action |
+| :--- | :--- |
+| `context` | Display registers, code, stack, and backtrace |
+| `registers` | Inspect CPU registers |
+| `checksec` | Inspect binary security protections |
+| `vmmap` | Display virtual memory map |
+| `pattern create <size>` | Generate cyclic pattern of `<size>` bytes for buffer offset calculation |
+| `pattern search <val>` | Search cyclic pattern offset for value `<val>` |
+| `quit` or `q` | Exit GDB session |
+
+---
+
 ## 2. Offline System Deployment
 
 ### 2.1 Target System Configuration (Linux)
 
 #### Step 1: Install prerequisite packages
-Verify that the host operating system has core administration tools.
+Verify that the host operating system includes core administration tools.
 
 For Fedora / RHEL systems:
 ```bash
-sudo dnf install -y zsh tmux util-linux-user git curl tar xz unzip fontconfig
+sudo dnf install -y zsh tmux util-linux-user git curl tar zstd xz unzip fontconfig
 ```
 
 For Ubuntu / Debian systems:
 ```bash
-sudo apt-get update && sudo apt-get install -y zsh tmux git curl tar xz-utils unzip fontconfig
+sudo apt-get update && sudo apt-get install -y zsh tmux git curl tar zstd xz-utils unzip fontconfig
 ```
 
-Verify that the host operating system has WezTerm installed.
+Verify that the host operating system includes WezTerm.
 For Fedora / RHEL systems:
 ```bash
 sudo dnf copr enable wezfurlong/wezterm-nightly
@@ -288,28 +352,44 @@ sudo dnf install wezterm
 ```
 
 #### Step 2: Transfer deployment archive
-Copy the standalone deployment package `dev-bundle-latest.tar.gz` to the target machine. Put the archive file in `$HOME` or a temporary directory.
+Target deployment archives use Zstandard compression (`dev-bundle-latest.tar.zst`).
+Copy `dev-bundle-latest.tar.zst` and `dev-bundle-latest.tar.zst.sha256` to the target machine.
+Place the files in the `$HOME` directory.
 
-#### Step 3: Extract bundle and execute deployment script
-Execute these commands to unpack the files and start automated configuration:
+#### Step 3: Verify archive checksum and execute deployment script
+Verify the SHA-256 checksum first:
 ```bash
-tar -xzf dev-bundle-latest.tar.gz -C "$HOME"
-~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.gz"
+sha256sum -c dev-bundle-latest.tar.zst.sha256
 ```
 
-The `install.sh` script does these actions automatically:
+Execute the installation script with the archive path:
+```bash
+~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.zst"
+```
+
+If you extract the bundle manually, use this command:
+```bash
+tar -I zstd -xf dev-bundle-latest.tar.zst -C "$HOME"
+```
+
+Execute `install.sh` without arguments to complete configuration:
+```bash
+~/.local/bin/install.sh
+```
+
+The `install.sh` script executes these actions:
 1. Moves conflicting dotfiles (`.zshrc`, `.tmux.conf`, Neovim data) to `~/.dotfiles-backup/<timestamp>/`.
-2. Unpacks static binaries (`rg`, `fd`, `fzf`, `starship`).
-3. Recreates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
-4. Restores bare Git tracking in `~/.dotfiles`.
+2. Restores bare Git tracking in `~/.dotfiles`.
+3. Sets executable permissions on binaries in `~/.local/bin` and Mason directories.
+4. Creates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
 5. Compiles WezTerm terminfo definitions into `~/.terminfo/`.
 6. Refreshes font configuration caches for JetBrains Mono Nerd Font.
 7. Rebuilds manual page databases.
-8. Configures Zsh as the default shell, or appends an interactive execution guard to `~/.bashrc`.
-9. Executes an automated system health check.
+8. Configures Zsh as the default shell, or appends an execution guard to `~/.bashrc`.
+9. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`).
 
 #### Step 4: Start environment
-Start your session:
+Execute this command to start your session:
 ```bash
 exec zsh
 ```
@@ -320,11 +400,13 @@ exec zsh
 
 1. Extract the portable `WezTerm-windows.zip` archive into a directory (for example: `C:\Tools\WezTerm\`).
 2. Copy `.config/wezterm/wezterm.lua` to `C:\Users\<User>\.config\wezterm\wezterm.lua`.
-3. Start `wezterm.exe` and establish an SSH connection to the Linux target:
+3. Start `wezterm.exe`.
+4. Connect to the Linux target host through SSH:
    ```cmd
    ssh username@target-ip
    ```
-4. Terminal clipboard integration works immediately. Text copied inside Neovim or tmux transfers to the Windows system clipboard through standard OSC 52 escape sequences.
+
+Text copied in Neovim or tmux transfers to the Windows system clipboard through standard OSC 52 escape sequences.
 
 ---
 
@@ -339,16 +421,18 @@ exec zsh
 │   ├── nvim/                   <- Neovim and LazyVim configuration
 │   ├── wezterm/                <- WezTerm terminal configuration
 │   └── starship.toml           <- Prompt settings
+├── .gdbinit                    <- GDB initialization script and GEF loader
 ├── .local/
 │   ├── bin/                    <- Standalone executables and operational scripts
 │   ├── opt/                    <- Extracted application trees (Neovim runtime)
 │   ├── env-manifest.txt        <- Toolchain version record
 │   └── share/
+│       ├── fonts/              <- JetBrains Mono font files
+│       ├── gef/                <- GEF (GDB Enhanced Features) script
+│       ├── man/                <- Manual pages
 │       ├── nvim/lazy/          <- Downloaded plugins and compiled Tree-sitter parsers
 │       ├── nvim/mason/         <- Language servers, formatters, and debuggers
-│       ├── zsh/                <- Zsh plugins and completion definitions
-│       ├── fonts/              <- JetBrains Mono font files
-│       └── man/                <- Manual pages
+│       └── zsh/                <- Zsh plugins and completion definitions
 ├── .terminfo/                  <- Compiled terminal capabilities
 ├── .tmux.conf                  <- Multiplexer configuration
 └── .zshrc                      <- Zsh configuration
@@ -367,7 +451,7 @@ dotfiles status
 # Add a modified configuration file
 dotfiles add ~/.config/nvim/lua/config/options.lua
 
-# Save modifications to history
+# Commit modifications to history
 dotfiles commit -m "Update option settings"
 
 # Push commits to remote Git repository
@@ -384,7 +468,7 @@ Execute `update.sh` on an internet-connected system to update components:
 # Routine Sync: Check and update Zsh plugins, Neovim plugins, Treesitter parsers, and Mason
 update.sh
 
-# Toolchain Update: Check and update rg, fd, fzf, Starship, man pages, and completions
+# Toolchain Update: Check and update rg, fd, fzf, starship, lazygit, and zoxide
 update.sh --tools
 
 # Runtime Update: Download latest stable Neovim runtime into .local/opt
@@ -396,10 +480,37 @@ update.sh --terminfo
 # Full Update: Execute all update modules
 update.sh --all
 
-# Force Rebuild: Ignore version checks and create a new tarball
+# Force Rebuild: Ignore version checks and create a new bundle
 update.sh --force
 
 # Manual Archive Creation: Create package bundle without updating software
 bundle.sh
 ```
 
+---
+
+### 3.4 Binary Whitelist and Environment Extension
+
+The `bundle.sh` script uses a binary whitelist (`BIN_WHITELIST`) to filter executables in `~/.local/bin`.
+This whitelist prevents host tools, temporary binaries, and host agents from polluting the offline bundle.
+Only approved tools package into the standalone deployment archive.
+
+Follow this procedure to add a new tool to the environment:
+
+1. Copy or install the binary into `~/.local/bin/`.
+2. Set executable permissions on the binary:
+   ```bash
+   chmod +x ~/.local/bin/<tool-name>
+   ```
+3. Open `~/.local/bin/bundle.sh` in an editor.
+4. Add the binary name to the `BIN_WHITELIST` array.
+5. Open `~/.local/bin/generate_manifest.sh` in an editor.
+6. Add a version check command for the binary to record the version in `env-manifest.txt`.
+7. Add manual pages for the tool to `~/.local/share/man/man1/`.
+8. Add shell completions for the tool to `~/.local/share/zsh/site-functions/`.
+9. Open `~/.config/dotfiles/README.md` to document the tool commands and keybindings.
+10. Execute `bundle.sh` to generate the updated deployment archive:
+    ```bash
+    bundle.sh
+    ```
+11. Verify that the new binary exists in the archive.

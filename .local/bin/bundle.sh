@@ -3,17 +3,39 @@ set -euo pipefail
 
 TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
 OUTPUT_DIR="${HOME}/bundles"
-ARCHIVE_NAME="dev-bundle-${TIMESTAMP}.tar.gz"
-LATEST_LINK="${OUTPUT_DIR}/dev-bundle-latest.tar.gz"
+ARCHIVE_NAME="dev-bundle-${TIMESTAMP}.tar.zst"
+LATEST_LINK="${OUTPUT_DIR}/dev-bundle-latest.tar.zst"
 
 mkdir -p "$OUTPUT_DIR"
+
+BIN_WHITELIST=(
+    "bundle.sh"
+    "fd"
+    "fzf"
+    "fzf-tmux"
+    "generate_manifest.sh"
+    "install.sh"
+    "lazygit"
+    "nvim"
+    "rg"
+    "starship"
+    "update.sh"
+    "zoxide"
+)
 
 echo "==> Generating latest version manifest..."
 "${HOME}/.local/bin/generate_manifest.sh"
 
 echo "==> Optimizing payload sizes (stripping debug symbols)..."
 # Strip local standalone ELF binaries
-find "$HOME/.local/bin" -type f -exec file {} + 2>/dev/null | grep "ELF" | cut -d: -f1 | xargs -r strip --strip-unneeded 2>/dev/null || true
+for bin in "${BIN_WHITELIST[@]}"; do
+    bin_path="$HOME/.local/bin/$bin"
+    if [ -f "$bin_path" ] && [ ! -L "$bin_path" ]; then
+        if file "$bin_path" 2>/dev/null | grep -q "ELF"; then
+            strip --strip-unneeded "$bin_path" 2>/dev/null || true
+        fi
+    fi
+done
 
 # Strip Mason language servers and debuggers (spares large space on liblldb / clangd)
 if [ -d "$HOME/.local/share/nvim/mason/packages" ]; then
@@ -29,7 +51,11 @@ TARGETS=()
 [ -d ".dotfiles" ] && TARGETS+=(".dotfiles")
 
 # 2. Binaries, Runtime Trees, and Manifest
-[ -d ".local/bin" ] && TARGETS+=(".local/bin")
+for bin in "${BIN_WHITELIST[@]}"; do
+    if [ -e ".local/bin/$bin" ] || [ -L ".local/bin/$bin" ]; then
+        TARGETS+=(".local/bin/$bin")
+    fi
+done
 [ -d ".local/opt" ] && TARGETS+=(".local/opt")
 [ -f ".local/env-manifest.txt" ] && TARGETS+=(".local/env-manifest.txt")
 
@@ -57,15 +83,24 @@ tar --exclude="*.log" \
     --exclude="__pycache__" \
     --exclude=".dotfiles/index.lock" \
     --exclude=".local/share/nvim/lazy/*/.git" \
+    --exclude=".local/share/nvim/lazy/*/tests" \
+    --exclude=".local/share/nvim/lazy/*/spec" \
+    --exclude=".local/share/nvim/lazy/*/.github" \
     --exclude=".local/share/zsh/*/.git" \
     --exclude=".local/share/nvim/mason/staging" \
-    -czf "${OUTPUT_DIR}/${ARCHIVE_NAME}" "${TARGETS[@]}"
+    -I 'zstd -19 -T0' \
+    -cf "${OUTPUT_DIR}/${ARCHIVE_NAME}" "${TARGETS[@]}"
 
 ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}" "$LATEST_LINK"
+
+echo "==> Generating SHA-256 checksums..."
+sha256sum "${OUTPUT_DIR}/${ARCHIVE_NAME}" > "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
+ln -sf "${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256" "${OUTPUT_DIR}/dev-bundle-latest.tar.zst.sha256"
 
 SIZE=$(du -h "${OUTPUT_DIR}/${ARCHIVE_NAME}" | cut -f1)
 echo "================================================="
 echo "SUCCESS: Optimized bundle created!"
-echo "Archive: ${OUTPUT_DIR}/${ARCHIVE_NAME} ($SIZE)"
-echo "Symlink: $LATEST_LINK"
+echo "Archive:  ${OUTPUT_DIR}/${ARCHIVE_NAME} ($SIZE)"
+echo "Checksum: ${OUTPUT_DIR}/${ARCHIVE_NAME}.sha256"
+echo "Symlink:  $LATEST_LINK"
 echo "================================================="
