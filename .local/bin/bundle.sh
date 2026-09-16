@@ -113,10 +113,9 @@ if [ -f "$HOME/.ssh/id_ed25519" ]; then
     # Generate companion allowed_signers for release distribution
     if [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
         echo "==> Generating allowed_signers public key mapping..."
-        PUBKEY=$(cat "$HOME/.ssh/id_ed25519.pub")
-        PRINCIPAL=$(awk '{print $3}' "$HOME/.ssh/id_ed25519.pub")
-        [ -z "$PRINCIPAL" ] && PRINCIPAL=$(git config user.email 2>/dev/null || echo "$USER@$(hostname)")
-        echo "$PRINCIPAL $PUBKEY" > "${OUTPUT_DIR}/allowed_signers"
+        KEY_TYPE=$(awk '{print $1}' "$HOME/.ssh/id_ed25519.pub")
+        KEY_DATA=$(awk '{print $2}' "$HOME/.ssh/id_ed25519.pub")
+        echo "* ${KEY_TYPE} ${KEY_DATA}" > "${OUTPUT_DIR}/allowed_signers"
     fi
 fi
 
