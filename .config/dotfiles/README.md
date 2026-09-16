@@ -270,7 +270,7 @@ You can run this environment directly on a Linux operating system, or connect to
 #### Step 1: Install prerequisite packages
 Verify that the host operating system has core administration tools.
 
-For Fedora / RHEL systems[]:
+For Fedora / RHEL systems:
 ```bash
 sudo dnf install -y zsh tmux util-linux-user git curl tar xz unzip fontconfig
 ```
@@ -280,11 +280,18 @@ For Ubuntu / Debian systems:
 sudo apt-get update && sudo apt-get install -y zsh tmux git curl tar xz-utils unzip fontconfig
 ```
 
+Verify that the host operating system has WezTerm installed.
+For Fedora / RHEL systems:
+```bash
+sudo dnf copr enable wezfurlong/wezterm-nightly
+sudo dnf install wezterm
+```
+
 #### Step 2: Transfer deployment archive
-Copy the standalone deployment package `dev-bundle-latest.tar.gz` to the target machine[]. Put the archive file in `$HOME` or a temporary directory.
+Copy the standalone deployment package `dev-bundle-latest.tar.gz` to the target machine. Put the archive file in `$HOME` or a temporary directory.
 
 #### Step 3: Extract bundle and execute deployment script
-Execute these commands to unpack the files and start automated configuration[]:
+Execute these commands to unpack the files and start automated configuration:
 ```bash
 tar -xzf dev-bundle-latest.tar.gz -C "$HOME"
 ~/.local/bin/install.sh "$HOME/dev-bundle-latest.tar.gz"
@@ -292,12 +299,12 @@ tar -xzf dev-bundle-latest.tar.gz -C "$HOME"
 
 The `install.sh` script does these actions automatically:
 1. Moves conflicting dotfiles (`.zshrc`, `.tmux.conf`, Neovim data) to `~/.dotfiles-backup/<timestamp>/`.
-2. Unpacks static binaries (`rg`, `fd`, `fzf`, `starship`)[].
-3. Recreates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`[].
-4. Restores bare Git tracking in `~/.dotfiles`[].
-5. Compiles WezTerm terminfo definitions into `~/.terminfo/`[].
-6. Refreshes font configuration caches for JetBrains Mono Nerd Font[].
-7. Rebuilds manual page databases[].
+2. Unpacks static binaries (`rg`, `fd`, `fzf`, `starship`).
+3. Recreates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
+4. Restores bare Git tracking in `~/.dotfiles`.
+5. Compiles WezTerm terminfo definitions into `~/.terminfo/`.
+6. Refreshes font configuration caches for JetBrains Mono Nerd Font.
+7. Rebuilds manual page databases.
 8. Configures Zsh as the default shell, or appends an interactive execution guard to `~/.bashrc`.
 9. Executes an automated system health check.
 
@@ -312,7 +319,7 @@ exec zsh
 ### 2.2 Windows Host Setup (WezTerm)
 
 1. Extract the portable `WezTerm-windows.zip` archive into a directory (for example: `C:\Tools\WezTerm\`).
-2. Copy `.config/wezterm/wezterm.lua` to `C:\Users\<User>\.config\wezterm\wezterm.lua`[].
+2. Copy `.config/wezterm/wezterm.lua` to `C:\Users\<User>\.config\wezterm\wezterm.lua`.
 3. Start `wezterm.exe` and establish an SSH connection to the Linux target:
    ```cmd
    ssh username@target-ip
@@ -371,7 +378,7 @@ dotfiles push
 
 ### 3.3 Update Operations
 
-Execute `update.sh` on an internet-connected system to update components[]:
+Execute `update.sh` on an internet-connected system to update components:
 
 ```bash
 # Routine Sync: Check and update Zsh plugins, Neovim plugins, Treesitter parsers, and Mason
