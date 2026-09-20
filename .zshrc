@@ -1,22 +1,7 @@
 # ==================================================
-# Environment Variables
+# Interactive Shell Configuration
+# Note: Core PATH, locale, and editors are defined in ~/.zshenv
 # ==================================================
-
-# Enforce unique entries in PATH (prevents duplicates on re-sourcing)
-typeset -U path PATH
-
-# Prepend custom directories in order of execution priority
-path=(
-  "$HOME/.cargo/bin"
-  "$HOME/.local/bin"
-  "$HOME/bin"
-  "$HOME/.local/share/nvim/mason/bin"
-  $path
-)
-export PATH
-
-export EDITOR="nvim"
-export VISUAL="nvim"
 
 # ==================================================
 # History
@@ -82,7 +67,16 @@ add-zsh-hook chpwd python_venv
 # Add my site-functions to fpath before compinit
 fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
 
-autoload -Uz compinit && compinit
+# Accelerate completion initialization with 24-hour cache check
+autoload -Uz compinit
+if () {
+    setopt local_options extended_glob
+    [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]
+}; then
+    compinit
+else
+    compinit -C
+fi
 
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # Case-insensitive tab completion
@@ -125,9 +119,11 @@ export FZF_DEFAULT_OPTS="--highlight-line \
   --color=separator:#ff9e64 \
   --color=spinner:#ff007c"
 
-# Use bat for fzf file preview if available
+# Use bat for fzf file preview and manual pager if available
 if command -v bat >/dev/null 2>&1; then
     export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :300 {}'"
+    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+    export MANROFFOPT="-c"
 fi
 
 # ==================================================
@@ -148,8 +144,14 @@ alias cd..='cd ..'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+alias mkdir="mkdir -p"
 alias history='history 0'     # Full history from beginning
 alias python='python3'
+
+# Create directory and change into it
+mcd() {
+    mkdir -p "$1" && cd "$1"
+}
 
 # System inspection shortcuts
 alias ports='ss -tulanp'

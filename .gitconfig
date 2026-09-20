@@ -6,9 +6,19 @@
 
 [push]
 	autoSetupRemote = true
+	default = current
+
+[fetch]
+	prune = true
+
+[rebase]
+	autostash = true
 
 [rerere]
 	enabled = true
+
+[commit]
+	verbose = true
 
 [core]
 	pager = delta
@@ -43,4 +53,5 @@
 	co = checkout
 	br = branch
 	ci = commit
+	pf = push --force-with-lease
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
