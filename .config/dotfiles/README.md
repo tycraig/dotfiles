@@ -240,7 +240,7 @@ Leader key: `<Space>`.
 | `Alt + c` | Interactive shell | Search directories and change directory immediately |
 | `Right Arrow` | Interactive shell | Accept inline autosuggestion |
 | `Ctrl + e` | Interactive shell | Accept inline autosuggestion |
-| `Esc` | Prompt input line | Switch to Vi normal mode (Cursor shape: `\|` -> `█`) |
+| `Esc` or `jk` | Prompt input line | Switch to Vi normal mode (Cursor shape: `\|` -> `█`) |
 | `i` | Vi normal mode | Switch to Vi insert mode before cursor |
 | `a` | Vi normal mode | Switch to Vi insert mode after cursor |
 | `v` | Vi normal mode | Open active command string in full Neovim editor |
@@ -535,10 +535,12 @@ Follow this test procedure to verify offline installation on an isolated target 
 ├── .dotfiles/                  <- Bare Git repository (tracks files in $HOME)
 ├── .cache/
 │   └── tealdeer/               <- Pre-seeded offline command cheatsheet cache
+├── .clang-format               <- C/C++ formatting specification
 ├── .config/
 │   ├── dotfiles/               <- Technical documentation and cheat sheet
 │   ├── lazygit/                <- Lazygit configuration (delta pager integration)
 │   ├── nvim/                   <- Neovim and LazyVim configuration
+│   ├── ruff/                   <- Python linting and formatting configuration
 │   ├── wezterm/                <- WezTerm terminal configuration
 │   └── starship.toml           <- Prompt settings
 ├── .gdbinit                    <- GDB initialization script and GEF loader

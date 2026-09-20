@@ -1,0 +1,59 @@
+target-version = "py310"
+line-length = 100
+
+[lint]
+# Selected high-value rules:
+# E/W: Pycodestyle errors and warnings
+# F:   Pyflakes (logic errors, unused variables, undefined symbols)
+# I:   isort (import sorting)
+# N:   pep8-naming conventions
+# UP:  pyupgrade (modern Python 3 syntax upgrade recommendations)
+# B:   flake8-bugbear (common bug and anti-pattern detection)
+# A:   flake8-builtins (prevents accidental shadowing of Python builtins)
+# C4:  flake8-comprehensions (detects suboptimal list/dict/set constructions)
+# SIM: flake8-simplify (suggests cleaner syntactic alternatives)
+# RUF: Ruff-specific rules
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "A",
+    "C4",
+    "SIM",
+    "RUF",
+]
+
+ignore = [
+    "E501",   # Line too long (managed by ruff format)
+    "B008",   # Do not perform function call in argument defaults (allows FastAPI / Typer Depends)
+    "SIM108", # Use ternary operator instead of if-else (often harms readability)
+]
+
+# Allow automatic fix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Treat variables with leading underscores as intentionally unused
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.isort]
+combine-as-imports = true
+known-first-party = []
+
+[lint.per-file-ignores]
+# Tests can use assert statements, relative imports, and unused arguments
+"tests/**/*" = ["S101", "ARG", "F403", "F405"]
+# Package definitions often expose re-exports without direct internal usage
+"__init__.py" = ["F401"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"

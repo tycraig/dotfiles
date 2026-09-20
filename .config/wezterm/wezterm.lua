@@ -6,11 +6,18 @@ local config = wezterm.config_builder()
 config.enable_wayland = true
 config.check_for_updates = false
 config.scrollback_lines = 10000
+config.audible_bell = 'Disabled'
+config.window_close_confirmation = 'NeverPrompt'
+config.adjust_window_size_when_changing_font_size = false
+
+-- Mouse ergonomics
+config.hide_mouse_cursor_when_typing = true
 
 -- Fonts and Style
 config.font = wezterm.font('JetBrainsMono Nerd Font', { weight = 'Regular' })
 config.font_size = 11.5
 config.line_height = 1.15
+config.harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' }
 
 config.color_scheme = 'tokyonight'
 config.window_padding = {
