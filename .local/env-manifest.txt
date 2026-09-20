@@ -1,6 +1,6 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-16 22:20:40 UTC
-Hostname: fedora
+Generated on: 2026-09-20 21:16:25 UTC
+Hostname: t14
 Architecture: x86_64
 =================================
 
@@ -59,7 +59,7 @@ v3.14.1
 ruff 0.16.7
 
 [GEF]
-Installed (/home/tyler/.local/share/gef/gef.py)
+Installed (/home/ty/.local/share/gef/gef.py)
 
 === MASON INSTALLED BINARIES ===
 asmfmt
