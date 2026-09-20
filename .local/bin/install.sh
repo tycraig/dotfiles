@@ -9,6 +9,9 @@ TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
 BACKUP_DIR="$HOME/.dotfiles-backup/${TIMESTAMP}"
 DOTFILES_GIT="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 
+# Ensure ~/.local/bin is present in PATH for current script execution
+export PATH="$HOME/.local/bin:$PATH"
+
 # --------------------------------------------------
 # 1. Distro Detection & Host Dependencies
 # --------------------------------------------------
@@ -17,40 +20,45 @@ if [ "$(uname -m)" != "x86_64" ]; then
     echo "[-] ERROR: This offline environment bundle is built for x86_64 hosts only." >&2
     exit 1
 fi
+
 HAS_SUDO=false
-if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-    HAS_SUDO=true
+if command -v sudo >/dev/null 2>&1; then
+    if sudo -n true 2>/dev/null; then
+        HAS_SUDO=true
+    elif [ -t 0 ] && [ -t 1 ]; then
+        echo -n "[?] Prompt for sudo credentials to install host packages? [y/N] "
+        if read -r -t 3 answer 2>/dev/null && [[ "$answer" =~ ^[Yy]$ ]]; then
+            if sudo -v 2>/dev/null; then
+                HAS_SUDO=true
+            fi
+        fi
+    fi
 fi
 
 if command -v dnf >/dev/null 2>&1; then
     PKG_MGR="dnf"
-    PKGS=(zsh tmux util-linux-user git curl tar xz unzip fontconfig)
+    PKGS=(ripgrep fd-find bat fzf eza zsh tmux util-linux-user git curl tar zstd xz unzip fontconfig)
 elif command -v apt-get >/dev/null 2>&1; then
     PKG_MGR="apt"
-    PKGS=(zsh tmux git curl tar xz-utils unzip fontconfig)
+    PKGS=(ripgrep fd-find bat fzf eza zsh tmux git curl tar zstd xz-utils unzip fontconfig)
 else
     PKG_MGR="unknown"
     PKGS=()
 fi
 
-MISSING=()
-for p in zsh tmux git; do
-    if ! command -v "$p" >/dev/null 2>&1; then
-        MISSING+=("$p")
-    fi
-done
-
-if [ ${#MISSING[@]} -gt 0 ]; then
-    echo "[!] Missing core packages: ${MISSING[*]}"
-    if [ "$HAS_SUDO" = true ]; then
-        if [ "$PKG_MGR" = "dnf" ]; then
-            sudo dnf install -y "${PKGS[@]}"
-        elif [ "$PKG_MGR" = "apt" ]; then
-            sudo apt-get update -qq && sudo apt-get install -y "${PKGS[@]}"
+if [ "$HAS_SUDO" = true ] && [ "$PKG_MGR" != "unknown" ]; then
+    echo "[+] Attempting host package installation via ${PKG_MGR}..."
+    if [ "$PKG_MGR" = "dnf" ]; then
+        if ! sudo dnf install -y --setopt=install_weak_deps=False "${PKGS[@]}" 2>/dev/null; then
+            echo "[-] Notice: DNF installation encountered errors or offline mirrors. Proceeding with fallback."
         fi
-    else
-        echo "[-] Notice: Non-root user. Assuming host packages are pre-installed."
+    elif [ "$PKG_MGR" = "apt" ]; then
+        if ! (sudo apt-get update -qq 2>/dev/null && sudo apt-get install -y "${PKGS[@]}" 2>/dev/null); then
+            echo "[-] Notice: APT installation encountered errors or offline mirrors. Proceeding with fallback."
+        fi
     fi
+else
+    echo "[-] Notice: Non-root user or offline mirrors. Skipping host package installation."
 fi
 
 # Optional fallback: extract archive if explicitly provided as an argument
@@ -97,19 +105,89 @@ if [ -d "$HOME/.dotfiles" ]; then
 fi
 
 # --------------------------------------------------
-# 3. Runtime Links & Permissions
+# 3. Tool Resolution, Name Normalization & Runtime Permissions
 # --------------------------------------------------
-echo "[3/5] Setting executable permissions and symlinks..."
-chmod +x "$HOME/.local/bin/"* 2>/dev/null || true
+echo "[3/5] Resolving toolchain binaries and normalizing names..."
+mkdir -p "$HOME/.local/bin"
 
-if [ -d "$HOME/.local/share/nvim/mason/bin" ]; then
-    chmod +x "$HOME/.local/share/nvim/mason/bin/"* 2>/dev/null || true
+find_system_bin() {
+    local name="$1"
+    for dir in /usr/bin /usr/local/bin /bin; do
+        if [ -x "$dir/$name" ]; then
+            echo "$dir/$name"
+            return 0
+        fi
+    done
+    return 1
+}
+
+TRACKED_TOOLS=(rg fd bat fzf eza starship lazygit zoxide delta tldr)
+STAGING_BIN_DIR="$HOME/.local/share/dev-bundle/bin"
+
+for tool in "${TRACKED_TOOLS[@]}"; do
+    case "$tool" in
+        fd)
+            if host_fdfind=$(find_system_bin fdfind); then
+                ln -sf "$host_fdfind" "$HOME/.local/bin/fd"
+                echo "  [✓] fd normalized -> $host_fdfind"
+            elif host_fd=$(find_system_bin fd); then
+                rm -f "$HOME/.local/bin/fd"
+                echo "  [✓] fd resolved to system ($host_fd)"
+            elif [ -f "$STAGING_BIN_DIR/fd" ]; then
+                cp -a "$STAGING_BIN_DIR/fd" "$HOME/.local/bin/fd"
+                chmod +x "$HOME/.local/bin/fd"
+                echo "  [✓] fd deployed from staging cache"
+            fi
+            ;;
+        bat)
+            if host_batcat=$(find_system_bin batcat); then
+                ln -sf "$host_batcat" "$HOME/.local/bin/bat"
+                echo "  [✓] bat normalized -> $host_batcat"
+            elif host_bat=$(find_system_bin bat); then
+                rm -f "$HOME/.local/bin/bat"
+                echo "  [✓] bat resolved to system ($host_bat)"
+            elif [ -f "$STAGING_BIN_DIR/bat" ]; then
+                cp -a "$STAGING_BIN_DIR/bat" "$HOME/.local/bin/bat"
+                chmod +x "$HOME/.local/bin/bat"
+                echo "  [✓] bat deployed from staging cache"
+            fi
+            ;;
+        *)
+            if host_bin=$(find_system_bin "$tool"); then
+                rm -f "$HOME/.local/bin/$tool"
+                echo "  [✓] $tool resolved to system ($host_bin)"
+            elif [ -f "$STAGING_BIN_DIR/$tool" ]; then
+                cp -a "$STAGING_BIN_DIR/$tool" "$HOME/.local/bin/$tool"
+                chmod +x "$HOME/.local/bin/$tool"
+                echo "  [✓] $tool deployed from staging cache"
+            fi
+            ;;
+    esac
+done
+
+# Ensure companion tools are linked / deployed
+if [ -f "$HOME/.local/bin/tldr" ] || find_system_bin tldr >/dev/null 2>&1; then
+    ln -sf tldr "$HOME/.local/bin/tealdeer"
+fi
+
+if ! find_system_bin fzf-tmux >/dev/null 2>&1; then
+    if [ -f "$STAGING_BIN_DIR/fzf-tmux" ]; then
+        cp -a "$STAGING_BIN_DIR/fzf-tmux" "$HOME/.local/bin/fzf-tmux"
+        chmod +x "$HOME/.local/bin/fzf-tmux"
+    fi
+else
+    rm -f "$HOME/.local/bin/fzf-tmux"
 fi
 
 # Link Neovim binary
 if [ -x "$HOME/.local/opt/nvim-linux-x86_64/bin/nvim" ]; then
-    mkdir -p "$HOME/.local/bin"
     ln -sf "$HOME/.local/opt/nvim-linux-x86_64/bin/nvim" "$HOME/.local/bin/nvim"
+fi
+
+chmod +x "$HOME/.local/bin/"* 2>/dev/null || true
+
+if [ -d "$HOME/.local/share/nvim/mason/bin" ]; then
+    chmod +x "$HOME/.local/share/nvim/mason/bin/"* 2>/dev/null || true
 fi
 
 # --------------------------------------------------
@@ -153,7 +231,7 @@ fi
 
 # Headless sanity tests
 FAILURES=0
-for cmd in rg fd fzf starship nvim lazygit zoxide bat delta tldr; do
+for cmd in rg fd fzf starship nvim lazygit zoxide bat delta tldr eza; do
     if command -v "$cmd" >/dev/null 2>&1; then
         echo "  [✓] $cmd is available."
     else
@@ -193,4 +271,3 @@ else
 fi
 echo "================================================="
 echo "Reload session: exec zsh"
-

@@ -133,8 +133,14 @@ fi
 # Core editor & file management
 alias vim="nvim"
 alias v="nvim"
-alias ls="ls --color=auto"
-alias ll="ls -lah --color=auto"
+if command -v eza >/dev/null 2>&1; then
+    alias ls="eza -F --icons=auto"
+    alias ll="eza -laF --git --icons=auto"
+    alias lt="eza --tree --level=2 --icons=auto"
+else
+    alias ls="ls --color=auto"
+    alias ll="ls -lah --color=auto"
+fi
 alias grep="grep --color=auto"
 
 # Shell ergonomics (friend's additions & POSIX helpers)

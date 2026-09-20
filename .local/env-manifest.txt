@@ -1,65 +1,87 @@
 === DEV ENVIRONMENT MANIFEST ===
-Generated on: 2026-09-20 21:16:25 UTC
-Hostname: t14
+Generated on: 2026-09-20 23:39:05 UTC
+Hostname: fedora
 Architecture: x86_64
 =================================
 
 [Zsh]
+Source: System Package (/usr/bin/zsh -> /usr/bin/zsh)
 zsh 5.9 (x86_64-redhat-linux-gnu)
 
 [Tmux]
+Source: System Package (/usr/bin/tmux -> /usr/bin/tmux)
 tmux 3.7c
 
 [Starship]
+Source: Bundled Binary (/home/tyler/.local/bin/starship)
 starship 1.26.0
 branch:main
 commit_hash:fca92d8
 
 [Neovim]
+Source: Bundled Binary (/home/tyler/.local/bin/nvim)
 NVIM v0.12.5
 Build type: Release
 LuaJIT 2.1.1774638290
 
 [Ripgrep (rg)]
-ripgrep 15.2.0 (rev e89fff89ac)
+Source: System Package (/usr/bin/rg -> /usr/bin/rg)
+ripgrep 15.2.0
 
 features:+pcre2
 
 [fd-find]
+Source: Bundled Binary (/home/tyler/.local/bin/fd)
 fd 10.5.0
 
 [fzf]
+Source: Bundled Binary (/home/tyler/.local/bin/fzf)
 0.74.4 (a140afeb)
 
 [Git]
+Source: System Package (/usr/bin/git -> /usr/bin/git)
 git version 2.55.0
 
 [Lazygit]
+Source: Bundled Binary (/home/tyler/.local/bin/lazygit)
 commit=17cb09fa7b08bc96d9f0e81b91f4720fc1a36700, build date=2026-09-13T05:42:30Z, build source=binaryRelease, version=0.65.1, os=linux, arch=amd64, git version=2.55.0
 
 [Zoxide]
+Source: Bundled Binary (/home/tyler/.local/bin/zoxide)
 zoxide 0.10.0
 
 [bat]
-bat 0.26.1 (979ba22)
+Source: System Package (/usr/bin/bat -> /usr/bin/bat)
+bat 0.26.1
 
 [delta]
+Source: Bundled Binary (/home/tyler/.local/bin/delta)
 delta 0.19.2
 
 [tealdeer (tldr)]
+Source: Bundled Binary (/home/tyler/.local/bin/tldr)
 tealdeer 1.9.0
 
+[eza]
+Source: Bundled Binary (/home/tyler/.local/bin/eza)
+eza eza - A modern, maintained replacement for ls
+v0.23.5 [+git]
+https://github.com/eza-community/eza
+
 [StyLua]
+Source: Bundled Binary (/home/tyler/.local/share/nvim/mason/bin/stylua)
 stylua 2.5.2
 
 [shfmt]
+Source: Bundled Binary (/home/tyler/.local/share/nvim/mason/bin/shfmt)
 v3.14.1
 
 [Ruff]
+Source: Bundled Binary (/home/tyler/.local/share/nvim/mason/bin/ruff)
 ruff 0.16.7
 
 [GEF]
-Installed (/home/ty/.local/share/gef/gef.py)
+Installed (/home/tyler/.local/share/gef/gef.py)
 
 === MASON INSTALLED BINARIES ===
 asmfmt

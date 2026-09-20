@@ -26,6 +26,7 @@ BIN_WHITELIST=(
     "delta"
     "tldr"
     "tealdeer"
+    "eza"
 )
 
 echo "==> Generating latest version manifest..."
@@ -41,6 +42,17 @@ for bin in "${BIN_WHITELIST[@]}"; do
         fi
     fi
 done
+
+# Strip canonical staging payload cache binaries
+if [ -d "$HOME/.local/share/dev-bundle/bin" ]; then
+    for bin_path in "$HOME/.local/share/dev-bundle/bin"/*; do
+        if [ -f "$bin_path" ] && [ ! -L "$bin_path" ]; then
+            if file "$bin_path" 2>/dev/null | grep -q "ELF"; then
+                strip --strip-unneeded "$bin_path" 2>/dev/null || true
+            fi
+        fi
+    done
+fi
 
 # Strip Mason language servers and debuggers (spares large space on liblldb / clangd)
 if [ -d "$HOME/.local/share/nvim/mason/packages" ]; then
@@ -66,6 +78,7 @@ done
 
 # 3. Terminal, Shell, and Tooling Assets
 [ -d ".terminfo" ] && TARGETS+=(".terminfo")
+[ -d ".local/share/dev-bundle" ] && TARGETS+=(".local/share/dev-bundle")
 [ -d ".local/share/zsh" ] && TARGETS+=(".local/share/zsh")
 [ -d ".local/share/fzf" ] && TARGETS+=(".local/share/fzf")
 [ -d ".local/share/man" ] && TARGETS+=(".local/share/man")

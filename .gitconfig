@@ -55,3 +55,4 @@
 	ci = commit
 	pf = push --force-with-lease
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	prune-local = "!git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d"

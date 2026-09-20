@@ -13,6 +13,7 @@ echo "This script will remove the offline development environment"
 echo "from your user profile ($HOME), including:"
 echo "  - Tracked dotfiles and bare Git repository (~/.dotfiles)"
 echo "  - Whitelisted standalone binaries in ~/.local/bin"
+echo "  - Canonical staging payload cache (~/.local/share/dev-bundle)"
 echo "  - Extracted runtimes (~/.local/opt, Mason, Lazy, Fonts, GEF)"
 echo "  - Environment man pages, completions, and terminfo"
 echo "  - Injected Zsh launcher guard in ~/.bashrc"
@@ -88,6 +89,7 @@ BIN_LIST=(
     "delta"
     "tldr"
     "tealdeer"
+    "eza"
 )
 
 for bin in "${BIN_LIST[@]}"; do
@@ -101,6 +103,7 @@ echo "  [✓] Removed environment binaries from ~/.local/bin."
 echo "[5/7] Removing application runtimes, plugins, and caches..."
 rm -rf "$HOME/.local/opt/nvim-linux-x86_64"
 rm -f "$HOME/.local/env-manifest.txt"
+rm -rf "$HOME/.local/share/dev-bundle"
 rm -rf "$HOME/.local/share/nvim"
 rm -rf "$HOME/.local/share/zsh"
 rm -rf "$HOME/.local/share/fzf"
@@ -130,10 +133,12 @@ MAN1_FILES=(
     "bat.1"
     "delta.1"
     "tldr.1"
+    "eza.1"
 )
 for man in "${MAN1_FILES[@]}"; do
     rm -f "$HOME/.local/share/man/man1/$man"
 done
+rm -f "$HOME/.local/share/man/man5/eza_colors.5" "$HOME/.local/share/man/man5/eza_colors-explanation.5"
 
 if [ -d "$HOME/.local/share/fonts" ] && command -v fc-cache >/dev/null 2>&1; then
     fc-cache -f "$HOME/.local/share/fonts" 2>/dev/null || true
@@ -144,6 +149,7 @@ if command -v mandb >/dev/null 2>&1; then
 fi
 
 echo "[7/7] Pruning empty directory structures..."
+rmdir "$HOME/.local/share/man/man5" 2>/dev/null || true
 rmdir "$HOME/.local/share/man/man1" 2>/dev/null || true
 rmdir "$HOME/.local/share/man" 2>/dev/null || true
 rmdir "$HOME/.local/share/fonts" 2>/dev/null || true
