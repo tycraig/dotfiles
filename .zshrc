@@ -160,6 +160,7 @@ mcd() {
 }
 
 # System inspection shortcuts
+alias path='print -l $path'
 alias ports='ss -tulanp'
 alias mem='free -h'
 alias df='df -h'

@@ -1,7 +1,7 @@
 # Development Environment Technical Specification and Operator Manual
 
 This document provides technical instructions and reference tables for the portable offline development environment.
-The environment contains Neovim (LazyVim), Zsh, tmux, WezTerm, lazygit, zoxide, and GEF.
+The environment contains Neovim (LazyVim), Zsh, tmux, WezTerm, lazygit, zoxide, GEF, bat, delta, tealdeer, and eza.
 You can run this environment directly on a Linux operating system, or connect to a Linux system through SSH from a Windows host.
 
 ---
@@ -368,6 +368,40 @@ The pages database is pre-cached for offline operation.
 
 ---
 
+### 1.12 Modern Directory Listings (eza)
+
+`eza` replaces standard `ls` with color-coded metadata, Git branch states, and file icons.
+
+#### Commands
+| Command | Action |
+| :--- | :--- |
+| `ls` | List files with type indicators and icons (`eza -F --icons=auto`) |
+| `ll` | Long format with permissions, sizes, Git status, and icons (`eza -laF --git --icons=auto`) |
+| `lt` | Two-level directory tree view (`eza --tree --level=2 --icons=auto`) |
+
+---
+
+### 1.13 Ergonomic Shell and Git Helpers
+
+#### Shell Shortcuts
+| Command | Action |
+| :--- | :--- |
+| `mcd <dir>` | Create directory and enter it immediately |
+| `path` | Display each directory in `PATH` on a separate line |
+| `ports` | Display listening network sockets and active ports |
+| `mem` | Display system memory usage in human-readable units |
+| `..` | Move to parent directory |
+
+#### Git Aliases
+| Command | Action |
+| :--- | :--- |
+| `git prune-local` | Delete local branches whose remote tracking branches were removed |
+| `git pf` | Safe force push (`push --force-with-lease`) |
+| `dfs` | Display dotfiles Git status (`dotfiles status`) |
+| `dotgit` | Open dotfiles repository in Lazygit interface |
+
+---
+
 ## 2. Offline System Deployment
 
 ### 2.1 Target System Configuration (Linux)
@@ -377,12 +411,12 @@ Verify that the host operating system includes core administration tools.
 
 For Fedora / RHEL systems:
 ```bash
-sudo dnf install -y zsh tmux util-linux-user git curl tar zstd xz unzip fontconfig
+sudo dnf install -y zsh tmux util-linux-user git curl tar zstd xz unzip fontconfig eza
 ```
 
 For Ubuntu / Debian systems:
 ```bash
-sudo apt-get update && sudo apt-get install -y zsh tmux git curl tar zstd xz-utils unzip fontconfig
+sudo apt-get update && sudo apt-get install -y zsh tmux git curl tar zstd xz-utils unzip fontconfig eza
 ```
 
 Verify that the host operating system includes WezTerm.
@@ -418,13 +452,13 @@ The `install.sh` script executes these actions:
 1. Migrates an existing `~/.gitconfig` to `~/.gitconfig.local` to preserve your host Git settings.
 2. Moves conflicting dotfiles (`.zshrc`, `.tmux.conf`, Neovim data) to `~/.dotfiles-backup/<timestamp>/`.
 3. Restores bare Git tracking in `~/.dotfiles`.
-4. Sets executable permissions on binaries in `~/.local/bin` and Mason directories.
+4. Resolves tools via tiered system package priority, normalizes Ubuntu names (`fdfind`, `batcat`), and deploys fallback binaries from `~/.local/share/dev-bundle/`.
 5. Creates the symbolic link `~/.local/bin/nvim` that points to `.local/opt/nvim-linux-x86_64/bin/nvim`.
 6. Compiles WezTerm terminfo definitions into `~/.terminfo/`.
 7. Refreshes font configuration caches for JetBrains Mono Nerd Font.
 8. Rebuilds manual page databases.
 9. Configures Zsh as the default shell, or appends an execution guard to `~/.bashrc`.
-10. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`, `bat`, `delta`, `tldr`).
+10. Executes an automated system health check for all core tools (`rg`, `fd`, `fzf`, `starship`, `nvim`, `lazygit`, `zoxide`, `bat`, `delta`, `tldr`, `eza`).
 
 #### Step 5: Start environment
 Execute this command to start your session:
@@ -517,6 +551,7 @@ Follow this test procedure to verify offline installation on an isolated target 
    exec zsh
    lazygit --version
    zoxide --version
+   eza --version
    nvim --headless "+qa"
    gdb -batch -ex "gef" -ex "quit"
    ```
@@ -550,6 +585,7 @@ Follow this test procedure to verify offline installation on an isolated target 
 │   ├── opt/                    <- Extracted application trees (Neovim runtime)
 │   ├── env-manifest.txt        <- Toolchain version record
 │   └── share/
+│       ├── dev-bundle/         <- Canonical offline payload cache (binaries, packaging source)
 │       ├── fonts/              <- JetBrains Mono font files
 │       ├── gef/                <- GEF (GDB Enhanced Features) script
 │       ├── man/                <- Manual pages
@@ -558,7 +594,8 @@ Follow this test procedure to verify offline installation on an isolated target 
 │       └── zsh/                <- Zsh plugins and completion definitions
 ├── .terminfo/                  <- Compiled terminal capabilities
 ├── .tmux.conf                  <- Multiplexer configuration
-└── .zshrc                      <- Zsh configuration
+├── .zshenv                     <- Shell environment, language settings, and non-interactive PATH
+└── .zshrc                      <- Zsh configuration and interactive shell setup
 ```
 
 ---
@@ -620,10 +657,12 @@ Only approved tools package into the standalone deployment archive.
 
 Follow this procedure to add a new tool to the environment:
 
-1. Copy or install the binary into `~/.local/bin/`.
-2. Set executable permissions on the binary:
+1. Copy the binary into `~/.local/bin/` and stage a standalone copy in `~/.local/share/dev-bundle/bin/`.
+   The `dev-bundle/bin` cache stores canonical offline payloads. This cache ensures that `bundle.sh` can package tools even when package managers replace binaries in `~/.local/bin`.
+2. Set executable permissions on both copies:
    ```bash
    chmod +x ~/.local/bin/<tool-name>
+   chmod +x ~/.local/share/dev-bundle/bin/<tool-name>
    ```
 3. Open `~/.local/bin/bundle.sh` in an editor.
 4. Add the binary name to the `BIN_WHITELIST` array.
